@@ -127,7 +127,7 @@ def load_gen1_pokemon(filename='pokedex.json', all_moves=[]):
             my_moves = compatible + fillers
 
         new_mon = Pokemon(p['id'],
-            p['name']['english'], p_types, stats['HP'], stats['Attack'], stats['Defense'],
+            p['name'], p_types, stats['HP'], stats['Attack'], stats['Defense'],
             stats['Sp. Attack'], stats['Sp. Defense'], stats['Speed'], my_moves
         )
         my_pokedex.append(new_mon)
