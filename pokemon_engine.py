@@ -95,21 +95,39 @@ def calculate_damage(attacker, defender, move):
 
 # --- 1. CARICAMENTO DATI ---
 
+# --- CARICAMENTO MOSSE "BLINDATO" ---
 def load_moves(filename='moves.json'):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(script_dir, filename)
+
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             raw_moves = json.load(f)
     except FileNotFoundError:
+        print(f"ERRORE: File {filename} non trovato.")
         return []
 
     valid_moves = []
     for m in raw_moves:
         if 'power' in m and m['power'] is not None:
-             category = m.get('category', 'Fisico')
-             valid_moves.append(Move(m['ename'], m['type'], m['power'], m.get('accuracy', 100), category))
+            category = m.get('category', 'Fisico')
+            
+
+            raw_acc = m.get('accuracy')
+            if raw_acc is None:
+                accuracy = 100
+            else:
+                accuracy = raw_acc
+            
+            valid_moves.append(Move(
+                m['ename'], 
+                m['type'], 
+                m['power'], 
+                accuracy, 
+                category
+            ))
     return valid_moves
+
 def convert_hp(base, level=50):
     return int(((base * 2 + 31) * level / 100) + level + 10)
 
