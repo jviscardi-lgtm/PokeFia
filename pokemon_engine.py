@@ -7,14 +7,14 @@ import copy
 # --- 0. CLASSI BASE ---
 
 class Move:
-    def __init__(self, name, type, power, accuracy=100):
+    def __init__(self, name, type, power, accuracy, category):
         self.name = name
         self.type = type
         self.power = power
         self.accuracy = accuracy
-
+        self.category = category    
     def __repr__(self):
-        return f"{self.name} ({self.type})"
+        return f"{self.name} ({self.type}, {self.category})"
 
 class Pokemon:
     def __init__(self, p_id, name, types, hp, atk, dfs, sp_atk, sp_dfs, speed, moves):
@@ -68,10 +68,18 @@ def get_type_effectiveness(move_type, target_types):
     return modifier
 
 def calculate_damage(attacker, defender, move):
-    if move.type in ["Fire", "Water", "Grass", "Electric", "Psychic", "Ice", "Dragon"]:
+    
+    hit_chance = random.randint(1, 100)
+    if hit_chance > move.accuracy:
+        return 0, -1.0 # Miss (Colpo fallito)
+    cat = move.category.lower()
+    if cat in ["speciale", "special"]:
+        # Mossa Speciale: usa Sp. Atk vs Sp. Def
         atk_stat = attacker.sp_attack
         def_stat = defender.sp_defense
     else:
+        # Mossa Fisica (o default): usa Attack vs Defense
+        # (Include "Fisico", "Physical" e casi strani)
         atk_stat = attacker.attack
         def_stat = defender.defense
         
@@ -79,7 +87,8 @@ def calculate_damage(attacker, defender, move):
     effectiveness = get_type_effectiveness(move.type, defender.types)
     random_factor = random.uniform(0.85, 1.0)
     
-    base_dmg = (2 * 50 / 5 + 2) * move.power * (atk_stat / def_stat) / 50 + 2
+    # Livello ipotetico 50
+    base_dmg = ((2 * 50 / 5 + 2) * move.power * (atk_stat / def_stat) / 50 + 2)
     final_damage = int(base_dmg * stab * effectiveness * random_factor)
     
     return final_damage, effectiveness
@@ -98,8 +107,15 @@ def load_moves(filename='moves.json'):
     valid_moves = []
     for m in raw_moves:
         if 'power' in m and m['power'] is not None:
-             valid_moves.append(Move(m['ename'], m['type'], m['power'], m.get('accuracy', 100)))
+             category = m.get('category', 'Fisico')
+             valid_moves.append(Move(m['ename'], m['type'], m['power'], m.get('accuracy', 100), category))
     return valid_moves
+def convert_hp(base, level=50):
+    return int(((base * 2 + 31) * level / 100) + level + 10)
+
+def convert_stat(base, level=50):
+    return int(((base * 2 + 31) * level / 100) + 5)
+
 
 def load_gen1_pokemon(filename='pokedex.json', all_moves=[]):
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -125,10 +141,21 @@ def load_gen1_pokemon(filename='pokedex.json', all_moves=[]):
             needed = 4 - len(compatible)
             fillers = random.sample(normal_moves, needed) if len(normal_moves) >= needed else normal_moves
             my_moves = compatible + fillers
-
+        real_hp = convert_hp(stats['HP'])
+        real_atk = convert_stat(stats['Attack'])
+        real_def = convert_stat(stats['Defense'])
+        real_sp_atk = convert_stat(stats['Sp. Attack'])
+        real_sp_def = convert_stat(stats['Sp. Defense'])
+        real_speed = convert_stat(stats['Speed'])
         new_mon = Pokemon(p['id'],
-            p['name'], p_types, stats['HP'], stats['Attack'], stats['Defense'],
-            stats['Sp. Attack'], stats['Sp. Defense'], stats['Speed'], my_moves
+            p['name'], p_types, 
+            real_hp,     
+            real_atk, 
+            real_def,
+            real_sp_atk, 
+            real_sp_def, 
+            real_speed, 
+            my_moves
         )
         my_pokedex.append(new_mon)
     return my_pokedex

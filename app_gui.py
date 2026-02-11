@@ -166,9 +166,24 @@ if not st.session_state['game_over']:
     cols = st.columns(4)
     for i, move in enumerate(p1.moves):
         with cols[i]:
-            if st.button(f"{move.name}\n({move.type})", key=f"btn_{i}", use_container_width=True):
+            # Icona visiva per la categoria
+            cat_lower = move.category.lower()
+            if cat_lower in ["fisico", "physical"]:
+                cat_icon = "💥" # Icona esplosione per Fisico
+                cat_label = "Fisico"
+            elif cat_lower in ["speciale", "special"]:
+                cat_icon = "✨" # Icona scintille per Speciale
+                cat_label = "Spec"
+            else:
+                cat_icon = "⚪" # Stato/Altro
+                cat_label = "Stato"
+            
+            # Etichetta bottone: Nome + Tipo + Icona Categoria
+            btn_label = f"{move.name}\n({move.type}) {cat_icon}"
+            
+            if st.button(btn_label, key=f"btn_{i}", use_container_width=True):
                 execute_turn("ATTACK", i)
-
+                
     # 2. SEZIONE SCAMBIO (NUOVA!)
     with st.expander("🔄 Sostituisci Pokémon (Panchina)"):
         st.write("Scegli un Pokémon per sostituire quello attuale (perderai il turno di attacco):")
