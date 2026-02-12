@@ -150,9 +150,17 @@ def execute_turn(player_action_type, player_data):
         if not battle.p2_active.is_fainted():
             dmg, eff = calculate_damage(battle.p2_active, battle.p1_active, ai_move)
             if eff == -1.0:
-                current_logs.append(f"❌ L'IA usa {ai_move.name} ma fallisce!")
+                current_logs.append(f"❌ **{who}** ({att.name}) usa {move.name} ma fallisce!")
+                    
+            
+            if eff > 1:
+                eff_msg = " (Super Efficace!)"
+            elif eff == 0:
+                eff_msg = " (Non ha effetto!)"  
+            elif eff < 1:
+                eff_msg = " (Non molto efficace...)"
             else:
-                eff_msg = " (Super Efficace!)" if eff > 1 else (" (Non efficace...)" if eff < 1 else "")
+                eff_msg = ""
                 current_logs.append(f"🤖 L'IA ({battle.p2_active.name}) usa {ai_move.name}{eff_msg} sul nuovo entrato!")
                 battle.p1_active.take_damage(dmg)
                 current_logs.append(f"-> {battle.p1_active.name} subisce {dmg} danni.")
@@ -177,7 +185,13 @@ def execute_turn(player_action_type, player_data):
                 current_logs.append(f"❌ **{who}** ({att.name}) usa {move.name} ma fallisce!")
                 continue
                 
-            eff_msg = " (Super Efficace!)" if eff > 1 else (" (Non efficace...)" if eff < 1 else "")
+            eff_msg = ""
+            if eff > 1:
+                eff_msg = " (Super Efficace!)"
+            elif eff == 0:
+                eff_msg = " (Non ha effetto!)"
+            elif eff < 1:
+                eff_msg = " (Non molto efficace...)"
             
             current_logs.append(f"**{who}** ({att.name}) usa {move.name}{eff_msg}")
             defe.take_damage(dmg)
